@@ -120,10 +120,19 @@ if [[ $OSTYPE == "linux-gnu" ]]; then
     media_keys=org.gnome.settings-daemon.plugins.media-keys
     custom_kbd=org.gnome.settings-daemon.plugins.media-keys.custom-keybindings
     kbd_path=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vim-anywhere
-    gsettings set $media_keys custom-keybindings "['others', '$kbd_path']"
-    gsettings set $custom_kbd:$kbd_path name $name
-    gsettings set $custom_kbd:$kbd_path binding $binding
-    gsettings set $custom_kbd:$kbd_path command $action
+
+	# Retain current settings
+	curr_settings=$(gsettings get $media_keys custom-keybindings | sed -e 's/^\[//' -e 's/\]$//' -e "s/ *'others',*//g" -e "s/ *'[^']*vim-anywhere',*//g" -e "s/, *$//")
+	if [ -z "$curr_settings" ] || echo "$curr_settings" | grep "^@"; then
+		curr_settings=""
+	else
+		curr_settings="${curr_settings}, "
+	fi
+
+    gsettings set $media_keys custom-keybindings "[${curr_settings}'others', '$kbd_path']"
+	gsettings set $custom_kbd:$kbd_path name $name
+	gsettings set $custom_kbd:$kbd_path binding $binding
+	gsettings set $custom_kbd:$kbd_path command $action
   fi
 
 # OSX install
